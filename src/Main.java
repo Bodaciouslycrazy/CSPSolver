@@ -11,12 +11,12 @@ public class Main {
 	public static void Main(String[] args)
 	{
 		//Make an assignment dictionary that is empty
-		Dictionary<String, Integer> assignment = new Hashtable<String, Integer>();
+		Hashtable<String, Integer> assignment = new Hashtable<String, Integer>();
 		
-		RecursiveBacktracking(assignment, 0);
+		RecursiveBacktracking(assignment, null);
 	}
 	
-	private static void RecursiveBacktracking(Dictionary<String, Integer> assignment, int constraint)
+	private static void RecursiveBacktracking(Hashtable<String, Integer> assignment, CSP problem)
 	{
 		
 	}
