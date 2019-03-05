@@ -32,8 +32,11 @@ public class Assignment {// extends Hashtable<String, Integer>{
 		return sb.toString();
 	}
 	
-	public void put(String var, int val)
+	public void put(String var, int val) throws Exception
 	{
+		if(Variables.contains(var))
+			throw new Exception("VARIABLE ASSIGNMENT ALREADY EXISTS");
+		
 		Variables.add(var);
 		Values.add(val);
 	}
@@ -42,10 +45,14 @@ public class Assignment {// extends Hashtable<String, Integer>{
 	{
 		int i = Variables.indexOf(var);
 		
-		if(i > 0)
+		if(i >= 0)
 		{
 			Variables.remove(i);
 			Values.remove(i);
+		}
+		else
+		{
+			System.out.println("Stupid error");
 		}
 	}
 	
