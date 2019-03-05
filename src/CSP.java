@@ -93,11 +93,11 @@ public class CSP {
 		
 		//Tie break by finding most constraining variables
 		ArrayList<String> mostConstraining = new ArrayList<String>();
-		int constrainingValueCount = 99999;
+		int constrainingValueCount = 0;
 		for(String var : mostConstrained)
 		{
 			int constrainValue = GetConstrainingValue(var, assigned);
-			if(constrainValue < constrainingValueCount)
+			if(constrainValue > constrainingValueCount)
 			{
 				constrainingValueCount = constrainValue;
 				mostConstraining.clear();
@@ -127,11 +127,67 @@ public class CSP {
 	
 	
 	//Returns the possible values for a variable in the domain.
-	public ArrayList<Integer> OrderDomainValues(String variable)
+	public ArrayList<Integer> OrderDomainValues(String variable, Assignment assigned)
 	{
-		System.out.println("Domain values not ordered correctly...");
-		return VarDomain.get(variable);
+		ArrayList<ConflictionCount> DomainConflictions = new ArrayList<ConflictionCount>();
+		
+		for(Integer domainValue : VarDomain.get(variable))
+		{
+			//find how many values this value constrains
+			ConflictionCount cc = new ConflictionCount();
+			cc.Value = domainValue;
+			cc.Count = GetConflictionCount(variable, domainValue, assigned);
+			DomainConflictions.add(cc);
+		}
+		
+		
+		//Finally, sort the list and return the variable names
+		DomainConflictions.sort(new SortByConflictions());
+		
+		ArrayList<Integer> result = new ArrayList<Integer>();
+		for(int i = 0; i < DomainConflictions.size(); i++)
+		{
+			result.add(DomainConflictions.get(i).Value);
+		}
+		
+		return result;
 	}
+	
+	
+	//Returns the number of conflictions 
+	public int GetConflictionCount(String variable, int value, Assignment assigned )
+	{
+		ArrayList<String> foundConflictions = new ArrayList<String>();
+		
+		
+		for(Constraint con : Constraints)
+		{
+			if(!con.ContainsKey(variable))
+				continue;
+			else if(assigned.containsKey(con.GetOtherKey(variable)))
+				continue;
+			
+			String checkingVariable = con.GetOtherKey(variable);
+			ArrayList<Integer> otherValues = VarDomain.get(con.GetOtherKey(variable));
+			
+			for(Integer otherValue : otherValues)
+			{
+				if(!con.CheckConstraint(variable,  value,  checkingVariable,  otherValue))
+				{
+					String foundConfliction = checkingVariable + ":" + otherValue;
+					//Add to foundConflictions if not already there
+					
+					if(!foundConflictions.contains(foundConfliction))
+						foundConflictions.add(foundConfliction);
+				}
+			}
+			
+		}
+		
+		return foundConflictions.size();
+	}
+	
+	 
 	
 	
 	//Returns an int that describes how much a variable constrains 
@@ -187,7 +243,7 @@ public class CSP {
 				String ckey = con.GetOtherKey(variable);
 				if(assigned.containsKey(ckey))
 				{
-					if(!con.CheckConstraint(variable,value,ckey,assigned.get(ckey).intValue()))
+					if(!con.CheckConstraint(variable,value,ckey,assigned.GetAssignedValue(ckey)))
 						return false;
 				}
 			}

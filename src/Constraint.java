@@ -37,7 +37,7 @@ public class Constraint {
 		if(!assignment.containsKey(LeftHandSide) || !assignment.containsKey(RightHandSide))
 			return true;
 		
-		return Op.Evaluate(assignment.get(LeftHandSide), assignment.get(RightHandSide));
+		return Op.Evaluate(assignment.GetAssignedValue(LeftHandSide), assignment.GetAssignedValue(RightHandSide));
 	}
 	
 	

@@ -42,11 +42,12 @@ public class Main {
 		
 		//Debug
 		String assigningVariable = problem.SelectVariable(assignment);
-		ArrayList<Integer> possibleValues = problem.OrderDomainValues(assigningVariable);
+		ArrayList<Integer> possibleValues = problem.OrderDomainValues(assigningVariable, assignment);
+		
+		System.out.println("Assigning variable: " + assigningVariable + ", possible values: " + possibleValues.size());
 		
 		for(int value : possibleValues)
 		{
-			//boolean canAssign = problem.CanAddAssignment(assigningVariable, value, assignment);
 			assignment.put(assigningVariable, value);
 			if(problem.IsAssignmentValid(assignment))
 			{
