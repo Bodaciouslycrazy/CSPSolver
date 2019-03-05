@@ -30,20 +30,46 @@ public class Constraint {
 		}
 	}
 	
-	public boolean CheckConstraint(Hashtable<String, Integer> assignment) throws Exception
+	
+	
+	public boolean CheckConstraint(Assignment assignment)
 	{
 		if(!assignment.containsKey(LeftHandSide) || !assignment.containsKey(RightHandSide))
-			throw new Exception("VARIABLE NOT FOUND");
+			return true;
 		
 		return Op.Evaluate(assignment.get(LeftHandSide), assignment.get(RightHandSide));
 	}
+	
+	
+	
+	public boolean CheckConstraint(String vara, int vala, String varb, int valb)
+	{
+		if(vara.equals(RightHandSide) && varb.equals(LeftHandSide))
+			return CheckConstraint(varb, valb, vara, vala);
+		else
+		{
+			return Op.Evaluate(vala, valb);
+		}
+	}
+	
+	
 	
 	public boolean ContainsKey(String key)
 	{
 		return LeftHandSide.equals(key) || RightHandSide.equals(key);
 	}
 	
-	public String ToString()
+	public String GetOtherKey(String in)
+	{
+		if(LeftHandSide.equals(in))
+			return RightHandSide;
+		else if(RightHandSide.equals(in))
+			return LeftHandSide;
+		else
+			return null;
+	}
+	
+	public String toString()
 	{
 		return LeftHandSide + " " + Op + " " + RightHandSide;
 	}
@@ -75,6 +101,6 @@ public class Constraint {
 		{
 			StringValue = val;
 		}
-		public String ToString() { return StringValue; }
+		public String toString() { return StringValue; }
 	}
 }

@@ -1,4 +1,6 @@
+import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 
 //Bodie Malik
 //3-3-2019
@@ -8,18 +10,67 @@ public class Main {
 
 	Dictionary<String, String> bleeh = new Hashtable<String, String>();
 	
-	public static void Main(String[] args)
+	public static void main(String[] args)
 	{
+		System.out.println("Remember, only 30 lines to stdout");
 		//Make an assignment dictionary that is empty
-		Hashtable<String, Integer> assignment = new Hashtable<String, Integer>();
+		try 
+		{
+			CSP problem = new CSP(args[0],args[1]);
+			
+			Assignment emptyAssignment = new Assignment();
+			Assignment finalAssignment = RecursiveBacktracking(emptyAssignment, problem);
+			
+			if(finalAssignment != null)
+				PrintAssignment(finalAssignment, true);
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+		}
 		
-		RecursiveBacktracking(assignment, null);
+		
+		
 	}
 	
-	private static void RecursiveBacktracking(Hashtable<String, Integer> assignment, CSP problem)
+	private static Assignment RecursiveBacktracking(Assignment assignment, CSP problem)
 	{
+		if(problem.IsAssignmentComplete(assignment))
+		{
+			return assignment;
+		}
 		
+		//Debug
+		String assigningVariable = problem.SelectVariable(assignment);
+		ArrayList<Integer> possibleValues = problem.OrderDomainValues(assigningVariable);
+		
+		for(int value : possibleValues)
+		{
+			//boolean canAssign = problem.CanAddAssignment(assigningVariable, value, assignment);
+			assignment.put(assigningVariable, value);
+			if(problem.IsAssignmentValid(assignment))
+			{
+				Assignment result = RecursiveBacktracking(assignment, problem);
+				if(result != null)
+					return result;
+			}
+			else
+			{
+				PrintAssignment(assignment, false);
+			}
+			assignment.remove(assigningVariable);
+		}
+		
+		//For none of these values can we find a sucecessfull assignment.
+		//Return failure (null).
+		return null;
 	}
 	
-	
+	public static void PrintAssignment(Assignment assignment, boolean success)
+	{
+		if(success)
+			System.out.println(assignment.toString() + "solution");
+		else
+			System.out.println(assignment.toString() + "failure");
+	}
 }
