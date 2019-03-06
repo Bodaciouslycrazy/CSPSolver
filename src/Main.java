@@ -8,15 +8,24 @@ import java.util.Map.Entry;
 
 public class Main {
 
-	Dictionary<String, String> bleeh = new Hashtable<String, String>();
 	private static int BranchesVisited = 0;
 	private static final int MaxBranches = 30;
-	
+	private static boolean ForwardCheckingEnabled = false;
 	
 	public static void main(String[] args)
 	{
 		try 
 		{
+			switch(args[2])
+			{
+			case "none": ForwardCheckingEnabled = false;
+				break;
+			case "fc": ForwardCheckingEnabled = true;
+				break;
+			default:
+				throw new Exception("Argument not recognized: must be either \"none\" or \"fc\".");
+			}
+			
 			CSP problem = new CSP(args[0],args[1]);
 			
 			//Make an assignment dictionary that is empty
@@ -39,11 +48,9 @@ public class Main {
 			return assignment;
 		}
 		
-		//This limits to 30 branches
+		//This limits to 30 branches. returns failure
 		if(BranchesVisited >= MaxBranches)
 			return null;
-		else
-			BranchesVisited++;
 
 		
 		String assigningVariable = problem.SelectVariable(assignment);
@@ -54,9 +61,19 @@ public class Main {
 		{
 			//System.out.println("Adding assignment: " + assigningVariable + " = " + value);
 			assignment.put(assigningVariable, value);
-			if(problem.IsAssignmentValid(assignment))
+			
+			//Default values for no forward checking
+			CSP nextProblem = problem;
+			boolean fcPass = true;
+			if(ForwardCheckingEnabled) 
 			{
-				Assignment result = RecursiveBacktracking(assignment, problem);
+				nextProblem = problem.clone();
+				fcPass = nextProblem.ForwardCheck(assignment);
+			}
+			
+			if(fcPass && problem.IsAssignmentValid(assignment))
+			{
+				Assignment result = RecursiveBacktracking(assignment, nextProblem);
 				if(result != null)
 					return result;
 			}
@@ -74,9 +91,14 @@ public class Main {
 	
 	public static void PrintAssignment(Assignment assignment, boolean success)
 	{
+		if(BranchesVisited >= MaxBranches)
+			return;
+		
 		if(success)
-			System.out.println(assignment.toString() + "solution");
+			System.out.println((BranchesVisited + 1) + ". " + assignment.toString() + "solution");
 		else
-			System.out.println(assignment.toString() + "failure");
+			System.out.println((BranchesVisited + 1) + ". " + assignment.toString() + "failure");
+		
+		BranchesVisited++;
 	}
 }

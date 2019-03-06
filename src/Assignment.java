@@ -13,25 +13,9 @@ public class Assignment {// extends Hashtable<String, Integer>{
 		Values = new ArrayList<Integer>();
 	}
 	
-	public String toString()
-	{
-		StringBuilder sb = new StringBuilder();
-		
-		for(int i = 0; i < Variables.size(); i++)
-		{
-			sb.append(Variables.get(i)).append("=").append(Values.get(i)).append(", ");
-		}
-		
-		/*
-		for(Entry<String, Integer> entry : entrySet())
-		{
-			sb.append(entry.getKey()).append("=").append(entry.getValue()).append(", ");
-		}
-		*/
-		
-		return sb.toString();
-	}
 	
+	
+	//Adds a variable-value pair to the assignment.
 	public void put(String var, int val) throws Exception
 	{
 		if(Variables.contains(var))
@@ -41,6 +25,9 @@ public class Assignment {// extends Hashtable<String, Integer>{
 		Values.add(val);
 	}
 	
+	
+	
+	//Removes a variable (and its value) from the assignment.
 	public void remove(String var)
 	{
 		int i = Variables.indexOf(var);
@@ -56,14 +43,35 @@ public class Assignment {// extends Hashtable<String, Integer>{
 		}
 	}
 	
+	
+	
+	//Returns true if the assignment contains the variable "key"
 	public boolean containsKey(String key)
 	{
 		return Variables.contains(key);
 	}
 	
-	public int GetAssignedValue(String var)
+	
+	
+	//Returns the assigned value of a given variable
+	public int get(String var)
 	{
 		int i = Variables.indexOf(var);
 		return Values.get(i);
+	}
+	
+	
+	
+	//Returns a string representation of the assignment for printing.
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		for(int i = 0; i < Variables.size(); i++)
+		{
+			sb.append(Variables.get(i)).append("=").append(Values.get(i)).append(", ");
+		}
+		
+		return sb.toString();
 	}
 }

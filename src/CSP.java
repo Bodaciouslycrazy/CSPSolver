@@ -2,13 +2,30 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
+
+/*
+ * Contains all the data and logic necessary to store/solve a ConstraintSatisfactionProblem.
+ * VariableDomain is stored as a hashtable with the variable name as a key and values as an ArrayList of Integer objects.
+ * Also stores an ArrayList of Constraints.
+ */
 public class CSP {
 
 	Hashtable<String, ArrayList<Integer>> VarDomain;
 	ArrayList<Constraint> Constraints;
+	//private boolean ForwardCheckingEnabled = false;
 	
-	public CSP(String varFileName, String constFileName) throws IOException
+	//Given .var and .con files, this constructor will automatically populate the CSP data.
+	public CSP(String varFileName, String constFileName) throws Exception
 	{
+		/*
+		if(fc.equals("fc"))
+			ForwardCheckingEnabled = true;
+		else if(fc.equals("none"))
+			ForwardCheckingEnabled = false;
+		else
+			throw new Exception("NON VALID ARGUMENT: must enter either \"none\" or \"fc\".");
+		*/
+		
 		VarDomain = new Hashtable<String, ArrayList<Integer>>();
 		
 		//********************************************************
@@ -63,8 +80,19 @@ public class CSP {
 	}
 	
 	
+	
+	//Constructor used for cloning.
+	public CSP(Hashtable<String, ArrayList<Integer>> newDomain, ArrayList<Constraint> newConst)
+	{
+		Constraints = newConst;
+		VarDomain = newDomain;
+	}
+	
+	
+	
 	//*****Select Variable*****
 	//Finds the best variable to assign a value to.
+	//prioritizes most contrained -> then most contraining -> then alphabetical.
 	public String SelectVariable(Assignment assigned)
 	{
 		ArrayList<String> mostConstrained = new ArrayList<String>();
@@ -127,6 +155,7 @@ public class CSP {
 	
 	
 	//Returns the possible values for a variable in the domain.
+	//Prioritizes least constraining -> then lowest value
 	public ArrayList<Integer> OrderDomainValues(String variable, Assignment assigned)
 	{
 		ArrayList<ConflictionCount> DomainConflictions = new ArrayList<ConflictionCount>();
@@ -154,7 +183,7 @@ public class CSP {
 	}
 	
 	
-	//Returns the number of conflictions 
+	//Returns the number of conflictions a new var-val assignment has with a given assignment
 	public int GetConflictionCount(String variable, int value, Assignment assigned )
 	{
 		ArrayList<String> foundConflictions = new ArrayList<String>();
@@ -181,7 +210,6 @@ public class CSP {
 						foundConflictions.add(foundConfliction);
 				}
 			}
-			
 		}
 		
 		return foundConflictions.size();
@@ -190,7 +218,7 @@ public class CSP {
 	 
 	
 	
-	//Returns an int that describes how much a variable constrains 
+	//Returns an int that describes how much a variable constrains
 	private int GetConstrainingValue(String var, Assignment assigned)
 	{
 		int unassignedConstraints = 0;
@@ -208,7 +236,8 @@ public class CSP {
 	}
 	
 	
-	
+	//Returns true if the assignment accounts for every variable in the domain.
+	//The assignment doesn't have to be accepted by the constraints...
 	public boolean IsAssignmentComplete(Assignment assignment)
 	{
 		Enumeration<String> keys = VarDomain.keys();
@@ -223,6 +252,8 @@ public class CSP {
 	}
 	
 	
+	
+	//Returns true if the assignment is accepted by all the constraints.
 	public boolean IsAssignmentValid(Assignment assignment)
 	{
 		for(Constraint con : Constraints)
@@ -231,9 +262,73 @@ public class CSP {
 				return false;
 		}
 		
+		/*
+		if(ForwardCheckingEnabled)
+			return ForwardCheck(assignment);
+		else
+			return true;
+		*/
 		return true;
 	}
 	
+	
+	
+	public CSP clone()
+	{
+		Hashtable<String, ArrayList<Integer>> newDomain = (Hashtable<String, ArrayList<Integer>>)VarDomain.clone();
+		
+		for(Entry<String, ArrayList<Integer>> entry : newDomain.entrySet())
+		{
+			entry.setValue( (ArrayList<Integer>)entry.getValue().clone() );
+		}
+		
+		
+		return new CSP(newDomain, Constraints);
+	}
+	
+	
+	//Removes values from our domain based on the given assignment.
+	//returns true is procedure can continue, false otherwise.
+	public boolean ForwardCheck(Assignment assignment)
+	{
+		//System.out.println("*****BEFORE CHECK*****");
+		//System.out.println(DomainToString());
+		
+		for(Constraint con : Constraints)
+		{
+			//If both variables are assigned already, skip
+			//If both variables are unassigned, also skip
+			if(assignment.containsKey(con.LeftHandSide) == assignment.containsKey(con.RightHandSide))
+				continue;
+			
+			String assignedVar = con.GetAssignedKey(assignment);
+			String unassignedVar = con.GetUnassignedKey(assignment);
+			
+			ArrayList<Integer> possibleValues = VarDomain.get(unassignedVar);
+			
+			for(int i = 0; i < possibleValues.size(); i++)
+			{
+				//If value doesn't pass constraint, remove it from domain.
+				if(!con.CheckConstraint(assignedVar, assignment.get(assignedVar), unassignedVar, possibleValues.get(i)))
+				{
+					possibleValues.remove(i);
+					i--;
+					//if we removed all possible values, return false.
+					//This branch may not continue.
+					if(possibleValues.size() == 0)
+						return false;
+				}
+			}
+		}
+		
+		//System.out.println("*****AFTER CHECK*****");
+		//System.out.println(DomainToString());
+		
+		return true;
+	}
+	
+	
+	/*
 	public boolean CanAddAssignment(String variable, int value, Assignment assigned) 
 	{
 		for(Constraint con : Constraints)
@@ -252,10 +347,26 @@ public class CSP {
 		//None of the constraints failed, so return true.
 		return true;
 	}
+	*/
 	
 	
 	/// FOR DEBUG ONLY
 	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(DomainToString()).append("\n");
+		
+		//Build constraint lines
+		for(Constraint cons : Constraints)
+		{
+			sb.append(cons.toString()).append("\n");
+		}
+		
+		return sb.toString();
+	}
+	
+	public String DomainToString()
 	{
 		StringBuilder sb = new StringBuilder();
 		//Build Domain Lines
@@ -270,16 +381,8 @@ public class CSP {
 			sb.append("\n");
 		}
 		
-		sb.append("\n");
-		
-		//Build constraint lines
-		for(Constraint cons : Constraints)
-		{
-			sb.append(cons.toString()).append("\n");
-		}
-		
 		return sb.toString();
 	}
-
-
+	
+	
 }
