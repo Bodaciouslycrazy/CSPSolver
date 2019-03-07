@@ -2,7 +2,13 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map.Entry;
 
-public class Assignment {// extends Hashtable<String, Integer>{
+
+/*
+ * ASSIGNMENT
+ * 
+ * Containts a list of Variable-Value pairs.
+ */
+public class Assignment {
 	
 	private ArrayList<String> Variables;
 	private ArrayList<Integer> Values;

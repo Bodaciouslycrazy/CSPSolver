@@ -154,6 +154,7 @@ public class CSP {
 	
 	
 	
+	
 	//Returns the possible values for a variable in the domain.
 	//Prioritizes least constraining -> then lowest value
 	public ArrayList<Integer> OrderDomainValues(String variable, Assignment assigned)
@@ -181,6 +182,8 @@ public class CSP {
 		
 		return result;
 	}
+	
+	
 	
 	
 	//Returns the number of conflictions a new var-val assignment has with a given assignment
@@ -236,6 +239,7 @@ public class CSP {
 	}
 	
 	
+	
 	//Returns true if the assignment accounts for every variable in the domain.
 	//The assignment doesn't have to be accepted by the constraints...
 	public boolean IsAssignmentComplete(Assignment assignment)
@@ -261,18 +265,14 @@ public class CSP {
 			if(!con.CheckConstraint(assignment))
 				return false;
 		}
-		
-		/*
-		if(ForwardCheckingEnabled)
-			return ForwardCheck(assignment);
-		else
-			return true;
-		*/
 		return true;
 	}
 	
 	
 	
+	@SuppressWarnings("unchecked")
+	//does a deep clone of the CSP
+	//you may make changes to a clone without changing variables from the original
 	public CSP clone()
 	{
 		Hashtable<String, ArrayList<Integer>> newDomain = (Hashtable<String, ArrayList<Integer>>)VarDomain.clone();
@@ -291,9 +291,7 @@ public class CSP {
 	//returns true is procedure can continue, false otherwise.
 	public boolean ForwardCheck(Assignment assignment)
 	{
-		//System.out.println("*****BEFORE CHECK*****");
-		//System.out.println(DomainToString());
-		
+		//Check every constraint
 		for(Constraint con : Constraints)
 		{
 			//If both variables are assigned already, skip
@@ -306,6 +304,7 @@ public class CSP {
 			
 			ArrayList<Integer> possibleValues = VarDomain.get(unassignedVar);
 			
+			//Check every unassigned value against the constraint
 			for(int i = 0; i < possibleValues.size(); i++)
 			{
 				//If value doesn't pass constraint, remove it from domain.
@@ -321,33 +320,8 @@ public class CSP {
 			}
 		}
 		
-		//System.out.println("*****AFTER CHECK*****");
-		//System.out.println(DomainToString());
-		
 		return true;
 	}
-	
-	
-	/*
-	public boolean CanAddAssignment(String variable, int value, Assignment assigned) 
-	{
-		for(Constraint con : Constraints)
-		{
-			if(con.ContainsKey(variable))
-			{
-				String ckey = con.GetOtherKey(variable);
-				if(assigned.containsKey(ckey))
-				{
-					if(!con.CheckConstraint(variable,value,ckey,assigned.GetAssignedValue(ckey)))
-						return false;
-				}
-			}
-		}
-		
-		//None of the constraints failed, so return true.
-		return true;
-	}
-	*/
 	
 	
 	/// FOR DEBUG ONLY
@@ -366,6 +340,10 @@ public class CSP {
 		return sb.toString();
 	}
 	
+	
+	//FOR DEBUG ONLY
+	//returns a printable string that describes the domain
+	//Has every variable, and every value for each variable
 	public String DomainToString()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -383,6 +361,4 @@ public class CSP {
 		
 		return sb.toString();
 	}
-	
-	
 }

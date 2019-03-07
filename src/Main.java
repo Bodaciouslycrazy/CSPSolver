@@ -32,6 +32,7 @@ public class Main {
 			Assignment emptyAssignment = new Assignment();
 			Assignment finalAssignment = RecursiveBacktracking(emptyAssignment, problem);
 			
+			//print final assignment if it wasn't a failure
 			if(finalAssignment != null)
 				PrintAssignment(finalAssignment, true);
 		} 
@@ -41,12 +42,21 @@ public class Main {
 		}
 	}
 	
+	
+	
+	//Main recursive backtracking algorithm.
+	//Parameters:
+	//	assignment - specifies which variables have been assigned what values.
+	//	problem - contains the problem domain and constraints.
+	//Returns:
+	//	Assignment - final accepted assignment (null if failure)
 	private static Assignment RecursiveBacktracking(Assignment assignment, CSP problem) throws Exception
 	{
 		if(problem.IsAssignmentComplete(assignment))
 		{
 			return assignment;
 		}
+		
 		
 		//This limits to 30 branches. returns failure
 		if(BranchesVisited >= MaxBranches)
@@ -57,6 +67,7 @@ public class Main {
 		ArrayList<Integer> possibleValues = problem.OrderDomainValues(assigningVariable, assignment);
 	
 		
+		//Attempt to assign every possible value
 		for(int value : possibleValues)
 		{
 			//System.out.println("Adding assignment: " + assigningVariable + " = " + value);
@@ -71,6 +82,7 @@ public class Main {
 				fcPass = nextProblem.ForwardCheck(assignment);
 			}
 			
+			//In order to accept assignment, ForwardCheck must pass, and the assignment must be accepted by constraints.
 			if(fcPass && problem.IsAssignmentValid(assignment))
 			{
 				Assignment result = RecursiveBacktracking(assignment, nextProblem);
@@ -89,6 +101,9 @@ public class Main {
 		return null;
 	}
 	
+	
+	//Prints an assignment object along with "solution" or "failure"
+	//Limits to max 30 prints
 	public static void PrintAssignment(Assignment assignment, boolean success)
 	{
 		if(BranchesVisited >= MaxBranches)
